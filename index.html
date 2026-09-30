@@ -3,506 +3,685 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JARVIS Holographic Interface</title>
+    <title>J.A.R.V.I.S. Holographic Interface</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Sci-Fi Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --cyan-glow: #00f3ff;
+            --cyan-dim: rgba(0, 243, 255, 0.2);
+            --blue-glow: #0066ff;
+            --glass-bg: rgba(4, 16, 32, 0.65);
+            --glass-border: rgba(0, 243, 255, 0.35);
+            --glass-shine: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 50%);
         }
 
         body {
-            font-family: 'Courier New', monospace;
-            background: #000000;
-            color: #00FFFF;
-            overflow: hidden;
+            font-family: 'Rajdhani', sans-serif;
+            background-color: #020813;
+            color: #d1f5ff;
+            overflow-x: hidden;
+        }
+
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .font-mono-tech { font-family: 'Share Tech Mono', monospace; }
+
+        /* Circuit Canvas Layer */
+        #circuit-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
             height: 100vh;
-        }
-
-        .hologram-bg {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(0, 200, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 50%, rgba(0, 150, 255, 0.1) 0%, transparent 50%);
             z-index: 0;
-        }
-
-        .grid {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                linear-gradient(0deg, transparent 24%, rgba(0, 255, 255, 0.05) 25%, rgba(0, 255, 255, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 255, 255, 0.05) 75%, rgba(0, 255, 255, 0.05) 76%, transparent 77%, transparent),
-                linear-gradient(90deg, transparent 24%, rgba(0, 255, 255, 0.05) 25%, rgba(0, 255, 255, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 255, 255, 0.05) 75%, rgba(0, 255, 255, 0.05) 76%, transparent 77%, transparent);
-            background-size: 50px 50px;
-            z-index: 1;
             pointer-events: none;
         }
 
-        .container {
-            position: relative;
-            z-index: 10;
-            width: 100%;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
+        /* Scanline Overlay */
+        .scanlines {
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 243, 255, 0.025) 50%
+            );
+            background-size: 100% 4px;
         }
 
-        header {
-            background: linear-gradient(to bottom, rgba(0, 50, 100, 0.9), rgba(0, 30, 60, 0.7));
-            border-bottom: 3px solid #00FFFF;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 0 40px rgba(0, 255, 255, 0.6);
-        }
-
-        .title {
-            font-size: 2.5em;
-            font-weight: bold;
-            letter-spacing: 4px;
-            color: #00FFFF;
-            text-shadow: 0 0 30px #00FFFF, 0 0 60px #0088FF;
-        }
-
-        .subtitle {
-            font-size: 0.8em;
-            color: #00AAFF;
-            letter-spacing: 2px;
-        }
-
-        .status {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .online-indicator {
-            width: 12px;
-            height: 12px;
-            background: #00FF41;
-            border-radius: 50%;
-            box-shadow: 0 0 20px #00FF41;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { box-shadow: 0 0 20px #00FF41; }
-            50% { box-shadow: 0 0 30px #00FF41, 0 0 40px rgba(0, 255, 65, 0.5); }
-        }
-
-        .status-text {
-            color: #00FF41;
-            font-weight: bold;
-            text-shadow: 0 0 10px #00FF41;
-        }
-
-        .main-content {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 1fr 2fr 1fr;
-            gap: 20px;
-            padding: 20px;
-        }
-
-        .panel {
-            background: rgba(0, 20, 40, 0.8);
-            border: 2px solid #00FFFF;
-            border-radius: 5px;
-            padding: 20px;
+        /* Glossy Glassmorphism Style */
+        .glossy-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
             box-shadow: 
-                0 0 30px rgba(0, 255, 255, 0.5),
-                inset 0 0 20px rgba(0, 255, 255, 0.1);
+                0 10px 30px 0 rgba(0, 0, 0, 0.7),
+                inset 0 1px 1px 0 rgba(255, 255, 255, 0.3),
+                inset 0 0 15px rgba(0, 243, 255, 0.08);
             position: relative;
             overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .panel::before {
+        /* Specular Highlight Sheen Effect */
+        .glossy-panel::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, #00FFFF, transparent);
-        }
-
-        .panel-title {
-            font-size: 1.1em;
-            font-weight: bold;
-            color: #00FFFF;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px #00FFFF;
-            border-bottom: 1px solid #00FFFF;
-            padding-bottom: 10px;
-        }
-
-        .stat-bar {
-            margin-bottom: 15px;
-        }
-
-        .stat-label {
-            font-size: 0.8em;
-            color: #0099FF;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            margin-bottom: 3px;
-        }
-
-        .bar-bg {
+            top: -50%;
+            left: -100%;
             width: 100%;
-            height: 6px;
-            background: rgba(0, 255, 255, 0.1);
-            border: 1px solid #00FFFF;
-            border-radius: 3px;
-            overflow: hidden;
+            height: 200%;
+            background: var(--glass-shine);
+            transform: skewX(-30deg);
+            transition: 0.8s ease-in-out;
+            pointer-events: none;
         }
 
-        .bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #00FFFF, #0088FF);
-            box-shadow: 0 0 10px #00FFFF;
-            transition: width 0.3s;
+        .glossy-panel:hover::before {
+            left: 150%;
         }
 
-        .stat-value {
-            font-size: 0.9em;
-            color: #00FF41;
-            text-align: right;
-            margin-top: 2px;
-            font-weight: bold;
+        .glossy-panel-interactive:hover {
+            border-color: var(--cyan-glow);
+            box-shadow: 
+                0 12px 35px -8px rgba(0, 243, 255, 0.45),
+                inset 0 1px 2px 0 rgba(255, 255, 255, 0.5),
+                inset 0 0 22px rgba(0, 243, 255, 0.2);
+            transform: translateY(-2px);
         }
 
-        .center-panel {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+        .text-glow {
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.8), 0 0 20px rgba(0, 243, 255, 0.4);
         }
 
-        canvas {
-            filter: drop-shadow(0 0 30px #00FFFF);
-            max-width: 100%;
+        /* Radar Animations */
+        .radar-sweep {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200%;
+            height: 200%;
+            margin-top: -100%;
+            margin-left: -100%;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, rgba(0, 243, 255, 0.45) 0deg, transparent 60deg, transparent 360deg);
+            animation: radarRotate 3.5s linear infinite;
         }
 
-        .hologram-label {
-            color: #0088FF;
-            font-size: 0.9em;
-            margin-top: 10px;
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px #00FFFF;
-            text-transform: uppercase;
+        @keyframes radarRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
-        .data-readout {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+        .radar-blip {
+            animation: blipPulse 2s ease-out infinite;
         }
 
-        .data-item {
-            background: rgba(0, 100, 150, 0.2);
-            border: 1px solid #00FFFF;
-            border-radius: 3px;
-            padding: 10px;
-            text-align: center;
+        @keyframes blipPulse {
+            0% { transform: scale(0.6); opacity: 1; box-shadow: 0 0 0 0 rgba(0, 243, 255, 0.9); }
+            70% { transform: scale(1.3); opacity: 0.8; box-shadow: 0 0 0 8px rgba(0, 243, 255, 0); }
+            100% { transform: scale(0.6); opacity: 0; }
         }
 
-        .data-label {
-            font-size: 0.75em;
-            color: #0088FF;
-            letter-spacing: 1px;
-            text-transform: uppercase;
+        /* Corner Tech Decorators */
+        .corner-accent {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-color: var(--cyan-glow);
+            pointer-events: none;
         }
+        .top-left { top: 4px; left: 4px; border-top: 2px solid; border-left: 2px solid; }
+        .top-right { top: 4px; right: 4px; border-top: 2px solid; border-right: 2px solid; }
+        .bottom-left { bottom: 4px; left: 4px; border-bottom: 2px solid; border-left: 2px solid; }
+        .bottom-right { bottom: 4px; right: 4px; border-bottom: 2px solid; border-right: 2px solid; }
 
-        .data-value {
-            font-size: 1.1em;
-            color: #00FF41;
-            font-weight: bold;
-            text-shadow: 0 0 10px #00FF41;
-            margin-top: 5px;
-        }
-
-        .alerts-section {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            max-height: 100%;
-            overflow-y: auto;
-        }
-
-        .alert {
-            padding: 8px 10px;
-            border-left: 3px solid #00FFFF;
-            background: rgba(0, 100, 150, 0.2);
-            font-size: 0.8em;
-            display: flex;
-            gap: 8px;
-        }
-
-        .alert-icon {
-            min-width: 15px;
-        }
-
-        .alert-success { border-left-color: #00FF41; color: #00FF41; }
-        .alert-warning { border-left-color: #FFAA00; color: #FFAA00; }
-        .alert-info { border-left-color: #00FFFF; color: #00FFFF; }
-
-        footer {
-            background: linear-gradient(to top, rgba(0, 50, 100, 0.9), rgba(0, 30, 60, 0.7));
-            border-top: 3px solid #00FFFF;
-            padding: 15px 30px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            box-shadow: 0 0 40px rgba(0, 255, 255, 0.6);
-        }
-
-        .command-prompt {
-            color: #00FF41;
-            font-weight: bold;
-            text-shadow: 0 0 5px #00FF41;
-        }
-
-        #cmd-input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            border-bottom: 2px solid #00FFFF;
-            color: #00FFFF;
-            font-family: 'Courier New', monospace;
-            font-size: 1em;
-            outline: none;
-            text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
-        }
-
-        #cmd-input:focus {
-            border-bottom-color: #00FF41;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-        }
-
-        #cmd-input::placeholder {
-            color: #0088FF;
-        }
-
-        .time-display {
-            color: #00FF41;
-            font-weight: bold;
-            text-shadow: 0 0 5px #00FF41;
-        }
-
-        @media (max-width: 1200px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-        }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(2, 8, 19, 0.8); }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 243, 255, 0.35); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0, 243, 255, 0.7); }
     </style>
 </head>
-<body>
-    <div class="hologram-bg"></div>
-    <div class="grid"></div>
-    
-    <div class="container">
-        <header>
-            <div>
-                <div class="title">J.A.R.V.I.S.</div>
-                <div class="subtitle">Just A Rather Very Intelligent System</div>
+<body class="min-h-screen relative flex flex-col justify-between p-3 md:p-6 bg-[#020813] text-cyan-100 scanlines select-none">
+
+    <canvas id="circuit-canvas"></canvas>
+
+    <div class="relative z-10 max-w-7xl mx-auto w-full flex flex-col gap-5 flex-grow">
+
+        <header class="glossy-panel p-4 flex flex-wrap items-center justify-between gap-4">
+            <div class="top-left corner-accent"></div>
+            <div class="top-right corner-accent"></div>
+
+            <div class="flex items-center gap-4">
+                <div class="relative flex items-center justify-center w-12 h-12 rounded-full border border-cyan-400/50 bg-cyan-950/40 shadow-[0_0_15px_rgba(0,243,255,0.3)]">
+                    <i class="fa-solid fa-atom text-2xl text-cyan-400 animate-spin" style="animation-duration: 8s;"></i>
+                    <div class="absolute inset-0 rounded-full border border-cyan-400 border-t-transparent animate-spin"></div>
+                </div>
+                <div>
+                    <h1 class="font-orbitron text-2xl md:text-3xl font-black tracking-widest text-cyan-300 text-glow">
+                        J.A.R.V.I.S.
+                    </h1>
+                    <p class="text-xs font-mono-tech tracking-wider text-cyan-400/70 uppercase">Tactical Holographic Interface</p>
+                </div>
             </div>
-            <div class="status">
-                <div class="online-indicator"></div>
-                <span class="status-text">ONLINE</span>
+
+            <div class="flex items-center gap-6 font-mono-tech">
+                <div class="hidden sm:flex flex-col items-end">
+                    <span class="text-[10px] text-cyan-400/60 uppercase">SYSTEM DIAGNOSTIC</span>
+                    <span class="text-sm text-cyan-300 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        ONLINE // OPTIMAL
+                    </span>
+                </div>
+
+                <div class="h-8 w-px bg-cyan-500/30 hidden sm:block"></div>
+
+                <div class="flex flex-col items-end">
+                    <span id="current-date" class="text-xs text-cyan-400/60">SEP 30, 2026</span>
+                    <span id="live-clock" class="text-xl font-bold font-orbitron text-cyan-300 text-glow">--:--:--</span>
+                </div>
             </div>
         </header>
 
-        <div class="main-content">
-            <!-- Left Panel -->
-            <div class="panel">
-                <div class="panel-title">SYSTEM STATUS</div>
-                
-                <div class="stat-bar">
-                    <div class="stat-label">CPU Load</div>
-                    <div class="bar-bg"><div class="bar-fill" style="width: 72%"></div></div>
-                    <div class="stat-value">72%</div>
-                </div>
+        <main class="grid grid-cols-1 lg:grid-cols-12 gap-5 flex-grow">
 
-                <div class="stat-bar">
-                    <div class="stat-label">Memory</div>
-                    <div class="bar-bg"><div class="bar-fill" style="width: 58%"></div></div>
-                    <div class="stat-value">58%</div>
-                </div>
+            <!-- LEFT COLUMN: System Telemetry -->
+            <section class="lg:col-span-3 flex flex-col gap-4">
+                <div class="glossy-panel p-4 flex-grow flex flex-col justify-between">
+                    <div class="top-left corner-accent"></div>
+                    <div class="bottom-right corner-accent"></div>
 
-                <div class="stat-bar">
-                    <div class="stat-label">Network</div>
-                    <div class="bar-bg"><div class="bar-fill" style="width: 95%"></div></div>
-                    <div class="stat-value">95%</div>
-                </div>
+                    <div class="flex items-center justify-between mb-4 border-b border-cyan-500/20 pb-2">
+                        <h2 class="font-orbitron text-sm font-bold tracking-wider text-cyan-300 flex items-center gap-2">
+                            <i class="fa-solid fa-microchip text-cyan-400"></i> SYSTEM STATUS
+                        </h2>
+                        <span class="text-[10px] font-mono-tech px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-500/30">TELEMETRY</span>
+                    </div>
 
-                <div class="stat-bar">
-                    <div class="stat-label">Storage</div>
-                    <div class="bar-bg"><div class="bar-fill" style="width: 43%"></div></div>
-                    <div class="stat-value">43%</div>
+                    <div class="space-y-4 font-mono-tech text-xs">
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-cyan-400/80">CPU LOAD</span>
+                                <span id="cpu-val" class="text-cyan-300 font-bold">72%</span>
+                            </div>
+                            <div class="h-2 w-full bg-cyan-950/80 rounded-full overflow-hidden border border-cyan-500/30 p-0.5">
+                                <div id="cpu-bar" class="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all duration-500" style="width: 72%;"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-cyan-400/80">MEMORY ALLOCATION</span>
+                                <span id="mem-val" class="text-cyan-300 font-bold">58%</span>
+                            </div>
+                            <div class="h-2 w-full bg-cyan-950/80 rounded-full overflow-hidden border border-cyan-500/30 p-0.5">
+                                <div id="mem-bar" class="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all duration-500" style="width: 58%;"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-cyan-400/80">NETWORK BANDWIDTH</span>
+                                <span id="net-val" class="text-cyan-300 font-bold">95%</span>
+                            </div>
+                            <div class="h-2 w-full bg-cyan-950/80 rounded-full overflow-hidden border border-cyan-500/30 p-0.5">
+                                <div id="net-bar" class="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all duration-500" style="width: 95%;"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-cyan-400/80">STORAGE MATRIX</span>
+                                <span id="storage-val" class="text-cyan-300 font-bold">43%</span>
+                            </div>
+                            <div class="h-2 w-full bg-cyan-950/80 rounded-full overflow-hidden border border-cyan-500/30 p-0.5">
+                                <div id="storage-bar" class="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all duration-500" style="width: 43%;"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="text-cyan-400/80">SHIELD STRENGTH</span>
+                                <span id="shield-val" class="text-cyan-300 font-bold">89%</span>
+                            </div>
+                            <div class="h-2 w-full bg-cyan-950/80 rounded-full overflow-hidden border border-cyan-500/30 p-0.5">
+                                <div id="shield-bar" class="h-full bg-gradient-to-r from-emerald-400 to-cyan-500 rounded-full transition-all duration-500" style="width: 89%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-cyan-500/20 text-center">
+                        <div class="text-[10px] font-mono-tech text-cyan-400/60 uppercase mb-1">ARC REACTOR POWER OUTPUT</div>
+                        <div class="text-2xl font-orbitron font-extrabold text-cyan-300 text-glow">8.5 GW</div>
+                        <p class="text-[10px] text-emerald-400 font-mono-tech mt-1"><i class="fa-solid fa-bolt"></i> OVERCHARGE BUFFER CLEAR</p>
+                    </div>
                 </div>
+            </section>
+
+            <!-- CENTER COLUMN: Favorite Bookmark Shortcuts -->
+            <section class="lg:col-span-6 flex flex-col gap-4">
+                <div class="glossy-panel p-5 flex-grow flex flex-col">
+                    <div class="top-left corner-accent"></div>
+                    <div class="top-right corner-accent"></div>
+                    <div class="bottom-left corner-accent"></div>
+                    <div class="bottom-right corner-accent"></div>
+
+                    <div class="flex items-center justify-between mb-4 border-b border-cyan-500/20 pb-3">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-compass text-cyan-400 text-lg"></i>
+                            <h2 class="font-orbitron text-base font-bold tracking-wider text-cyan-300">
+                                SHORTCUT MODULES
+                            </h2>
+                        </div>
+                        <button id="open-add-modal" class="px-3 py-1.5 rounded-lg bg-cyan-950/80 hover:bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-xs font-mono-tech flex items-center gap-2 transition-all hover:border-cyan-400 shadow-[0_0_10px_rgba(0,243,255,0.15)]">
+                            <i class="fa-solid fa-plus text-cyan-400"></i> ADD MODULE
+                        </button>
+                    </div>
+
+                    <!-- Shortcut Tiles Container -->
+                    <div id="shortcuts-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 overflow-y-auto max-h-[380px] p-1 pr-2">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT COLUMN: Tactical Radar & Data Readout -->
+            <section class="lg:col-span-3 flex flex-col gap-4">
+                <div class="glossy-panel p-4 flex-grow flex flex-col items-center justify-between text-center">
+                    <div class="top-right corner-accent"></div>
+                    <div class="bottom-left corner-accent"></div>
+
+                    <div class="w-full flex items-center justify-between border-b border-cyan-500/20 pb-2 mb-2">
+                        <h2 class="font-orbitron text-sm font-bold tracking-wider text-cyan-300 flex items-center gap-2">
+                            <i class="fa-solid fa-crosshairs text-cyan-400"></i> TACTICAL HOLOGRAM
+                        </h2>
+                        <span class="text-[10px] font-mono-tech text-cyan-400/70">RADAR ACTIVE</span>
+                    </div>
+
+                    <!-- Radar Viewport -->
+                    <div class="relative w-44 h-44 my-2 flex items-center justify-center rounded-full border border-cyan-500/40 bg-cyan-950/30 shadow-[0_0_25px_rgba(0,243,255,0.15)] overflow-hidden">
+                        <div class="absolute inset-3 rounded-full border border-cyan-500/30"></div>
+                        <div class="absolute inset-8 rounded-full border border-cyan-500/25 border-dashed"></div>
+                        <div class="absolute inset-14 rounded-full border border-cyan-500/20"></div>
+
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="w-full h-px bg-cyan-500/30"></div>
+                        </div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="h-full w-px bg-cyan-500/30"></div>
+                        </div>
+
+                        <div class="radar-sweep"></div>
+
+                        <!-- Animated Radar Blips -->
+                        <div class="radar-blip absolute top-10 left-12 w-2.5 h-2.5 bg-emerald-400 rounded-full border border-white"></div>
+                        <div class="radar-blip absolute bottom-12 right-10 w-2.5 h-2.5 bg-cyan-400 rounded-full border border-white" style="animation-delay: 0.7s;"></div>
+                        <div class="radar-blip absolute top-16 right-12 w-2 h-2 bg-amber-400 rounded-full border border-white" style="animation-delay: 1.3s;"></div>
+
+                        <div class="w-2.5 h-2.5 bg-cyan-300 rounded-full shadow-[0_0_10px_#00f3ff] z-10"></div>
+                    </div>
+
+                    <!-- Data Readout -->
+                    <div class="w-full space-y-2 mt-2 font-mono-tech text-xs">
+                        <div class="p-2 rounded bg-cyan-950/40 border border-cyan-500/20 flex justify-between items-center">
+                            <span class="text-cyan-400/70">THREAT LEVEL</span>
+                            <span class="text-emerald-400 font-bold tracking-wider">LOW (0.02)</span>
+                        </div>
+                        <div class="p-2 rounded bg-cyan-950/40 border border-cyan-500/20 flex justify-between items-center">
+                            <span class="text-cyan-400/70">COMMS SIGNAL</span>
+                            <span class="text-cyan-300 font-bold">STRONG</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="glossy-panel p-4 flex flex-col gap-3">
+            <div class="top-left corner-accent"></div>
+            <div class="top-right corner-accent"></div>
+
+            <div class="flex items-center justify-between text-xs font-mono-tech text-cyan-400/70 border-b border-cyan-500/20 pb-1">
+                <span class="flex items-center gap-2">
+                    <i class="fa-solid fa-terminal text-cyan-400"></i> ALERTS & INTERACTIVE TERMINAL
+                </span>
+                <button id="clear-terminal-btn" class="hover:text-cyan-200 transition-colors">
+                    [ CLEAR CONSOLE ]
+                </button>
             </div>
 
-            <!-- Center Panel -->
-            <div class="panel center-panel">
-                <div class="panel-title" style="width: 100%; text-align: center;">TACTICAL HOLOGRAM</div>
-                <canvas id="radarCanvas" width="300" height="300"></canvas>
-                <div class="hologram-label">THREAT ASSESSMENT</div>
+            <!-- Terminal Output Window -->
+            <div id="terminal-logs" class="h-28 overflow-y-auto font-mono-tech text-xs space-y-1.5 p-2.5 bg-black/50 rounded border border-cyan-500/20">
+                <div class="text-cyan-400/70"><span class="text-cyan-500">[SYSTEM]:</span> J.A.R.V.I.S. Core Interface v4.0 Online. Type <span class="text-cyan-200 font-bold">'help'</span> for terminal commands.</div>
+                <div class="text-emerald-400/90"><span class="text-emerald-500">[STATUS]:</span> Circuits, bookmarks, telemetry, and tactical holograms active.</div>
             </div>
 
-            <!-- Right Panel -->
-            <div class="panel">
-                <div class="panel-title">DATA READOUT</div>
-                
-                <div class="data-readout">
-                    <div class="data-item">
-                        <div class="data-label">Reactor Status</div>
-                        <div class="data-value">100%</div>
-                    </div>
-                    <div class="data-item">
-                        <div class="data-label">Shield Strength</div>
-                        <div class="data-value">89%</div>
-                    </div>
-                    <div class="data-item">
-                        <div class="data-label">Power Output</div>
-                        <div class="data-value">8.5 GW</div>
-                    </div>
-                    <div class="data-item">
-                        <div class="data-label">Comms Signal</div>
-                        <div class="data-value">STRONG</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Alerts Footer Section -->
-        <div class="panel" style="margin: 0 20px 20px; height: auto; max-height: 150px;">
-            <div class="panel-title">ALERTS & NOTIFICATIONS</div>
-            <div class="alerts-section">
-                <div class="alert alert-info">
-                    <span class="alert-icon">⚡</span>
-                    <span>Power systems nominal</span>
-                </div>
-                <div class="alert alert-success">
-                    <span class="alert-icon">✓</span>
-                    <span>All systems operational</span>
-                </div>
-                <div class="alert alert-warning">
-                    <span class="alert-icon">⚠</span>
-                    <span>Backup power at 87%</span>
-                </div>
-                <div class="alert alert-info">
-                    <span class="alert-icon">📡</span>
-                    <span>Satellite link active</span>
-                </div>
-            </div>
-        </div>
-
-        <footer>
-            <span class="command-prompt">JARVIS></span>
-            <input type="text" id="cmd-input" placeholder="Enter command..." autocomplete="off">
-            <span class="time-display" id="time-display">00:00:00</span>
+            <!-- Command Line Input -->
+            <form id="terminal-form" class="flex items-center gap-2 bg-cyan-950/60 border border-cyan-500/40 rounded-lg p-2 focus-within:border-cyan-400 focus-within:shadow-[0_0_12px_rgba(0,243,255,0.25)] transition-all">
+                <span class="font-orbitron font-bold text-xs text-cyan-400 tracking-wider">JARVIS&gt;</span>
+                <input 
+                    type="text" 
+                    id="terminal-input" 
+                    class="bg-transparent text-cyan-100 font-mono-tech text-sm w-full outline-none placeholder-cyan-600/60" 
+                    placeholder="Enter command ('help', 'status', 'add site', 'open github', 'radar scan')..." 
+                    autocomplete="off"
+                />
+                <button type="submit" class="text-cyan-400 hover:text-cyan-200 px-2">
+                    <i class="fa-solid fa-paper-plane text-xs"></i>
+                </button>
+            </form>
         </footer>
     </div>
 
+    <div id="shortcut-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glossy-panel max-w-md w-full p-6 relative">
+            <div class="top-left corner-accent"></div>
+            <div class="top-right corner-accent"></div>
+            <div class="bottom-left corner-accent"></div>
+            <div class="bottom-right corner-accent"></div>
+
+            <h3 class="font-orbitron text-lg font-bold text-cyan-300 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-plus-circle text-cyan-400"></i> ADD NEW MODULE SHORTCUT
+            </h3>
+
+            <form id="add-shortcut-form" class="space-y-4 font-mono-tech">
+                <div>
+                    <label class="block text-xs text-cyan-400/80 mb-1">MODULE TITLE</label>
+                    <input type="text" id="shortcut-title" required placeholder="e.g., GitHub, Twitter, Work" class="w-full bg-cyan-950/80 border border-cyan-500/40 rounded p-2.5 text-sm text-cyan-100 outline-none focus:border-cyan-400">
+                </div>
+
+                <div>
+                    <label class="block text-xs text-cyan-400/80 mb-1">TARGET URL</label>
+                    <input type="url" id="shortcut-url" required placeholder="https://example.com" class="w-full bg-cyan-950/80 border border-cyan-500/40 rounded p-2.5 text-sm text-cyan-100 outline-none focus:border-cyan-400">
+                </div>
+
+                <div>
+                    <label class="block text-xs text-cyan-400/80 mb-1">ICON CLASS (FontAwesome Optional)</label>
+                    <input type="text" id="shortcut-icon" placeholder="fa-brands fa-github (or leave blank)" class="w-full bg-cyan-950/80 border border-cyan-500/40 rounded p-2.5 text-sm text-cyan-100 outline-none focus:border-cyan-400">
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-2">
+                    <button type="button" id="close-add-modal" class="px-4 py-2 rounded bg-slate-800 text-cyan-400 text-xs hover:bg-slate-700 transition-colors">
+                        CANCEL
+                    </button>
+                    <button type="submit" class="px-4 py-2 rounded bg-cyan-500/20 border border-cyan-400 text-cyan-300 text-xs font-bold hover:bg-cyan-500/40 transition-colors shadow-[0_0_10px_rgba(0,243,255,0.2)]">
+                        SAVE MODULE
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
-        // Update time
-        function updateTime() {
-            const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById('time-display').textContent = `${hours}:${minutes}:${seconds}`;
-        }
+        const DEFAULT_SHORTCUTS = [
+            { id: '1', title: 'YouTube', url: 'https://youtube.com', icon: 'fa-brands fa-youtube', color: 'text-red-400' },
+            { id: '2', title: 'Google', url: 'https://google.com', icon: 'fa-brands fa-google', color: 'text-blue-400' },
+            { id: '3', title: 'GitHub', url: 'https://github.com', icon: 'fa-brands fa-github', color: 'text-purple-300' },
+            { id: '4', title: 'Reddit', url: 'https://reddit.com', icon: 'fa-brands fa-reddit-alien', color: 'text-orange-400' },
+            { id: '5', title: 'Wikipedia', url: 'https://wikipedia.org', icon: 'fa-wikipedia-w', color: 'text-slate-300' },
+            { id: '6', title: 'ChatGPT', url: 'https://chatgpt.com', icon: 'fa-solid fa-robot', color: 'text-emerald-400' },
+            { id: '7', title: 'Netflix', url: 'https://netflix.com', icon: 'fa-solid fa-film', color: 'text-red-500' },
+            { id: '8', title: 'CodePen', url: 'https://codepen.io', icon: 'fa-brands fa-codepen', color: 'text-cyan-300' }
+        ];
 
-        // Radar animation
-        function drawRadar() {
-            const canvas = document.getElementById('radarCanvas');
+        let userShortcuts = JSON.parse(localStorage.getItem('jarvis_shortcuts')) || DEFAULT_SHORTCUTS;
+
+        window.onload = function() {
+            initCircuitBackground();
+            renderShortcuts();
+            startLiveClock();
+            startTelemetryFluctuations();
+            setupTerminalLogic();
+            setupModalListeners();
+        };
+
+        // Interactive Circuit Canvas Logic
+        function initCircuitBackground() {
+            const canvas = document.getElementById('circuit-canvas');
             const ctx = canvas.getContext('2d');
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const maxRadius = 120;
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resize();
+            window.addEventListener('resize', resize);
 
-            // Grid circles
-            ctx.strokeStyle = 'rgba(0, 255, 255, 0.3)';
-            ctx.lineWidth = 1;
-            for (let i = 1; i <= 3; i++) {
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, (maxRadius / 3) * i, 0, Math.PI * 2);
-                ctx.stroke();
+            const nodes = [];
+            const nodeCount = Math.floor((window.innerWidth * window.innerHeight) / 22000);
+
+            for (let i = 0; i < nodeCount; i++) {
+                nodes.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.4,
+                    vy: (Math.random() - 0.5) * 0.4,
+                    radius: Math.random() * 2 + 1
+                });
             }
 
-            // Crosshairs
-            ctx.strokeStyle = 'rgba(0, 255, 255, 0.5)';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(centerX, centerY - maxRadius - 20);
-            ctx.lineTo(centerX, centerY + maxRadius + 20);
-            ctx.moveTo(centerX - maxRadius - 20, centerY);
-            ctx.lineTo(centerX + maxRadius + 20, centerY);
-            ctx.stroke();
+            function animateCanvas() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Rotating sweep
-            const now = Date.now();
-            const angle = (now / 3000) % (Math.PI * 2);
-            ctx.strokeStyle = 'rgba(0, 255, 255, 0.8)';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(centerX, centerY);
-            ctx.lineTo(
-                centerX + Math.cos(angle - Math.PI / 2) * maxRadius,
-                centerY + Math.sin(angle - Math.PI / 2) * maxRadius
-            );
-            ctx.stroke();
+                for (let i = 0; i < nodes.length; i++) {
+                    for (let j = i + 1; j < nodes.length; j++) {
+                        const dx = nodes[i].x - nodes[j].x;
+                        const dy = nodes[i].y - nodes[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
 
-            // Blips
-            ctx.fillStyle = 'rgba(0, 255, 65, 0.9)';
-            for (let i = 0; i < 5; i++) {
-                const blipAngle = (angle + (i * Math.PI * 2 / 5)) % (Math.PI * 2);
-                const blipDistance = maxRadius * (0.3 + Math.random() * 0.7);
-                const x = centerX + Math.cos(blipAngle - Math.PI / 2) * blipDistance;
-                const y = centerY + Math.sin(blipAngle - Math.PI / 2) * blipDistance;
-                ctx.beginPath();
-                ctx.arc(x, y, 3, 0, Math.PI * 2);
-                ctx.fill();
+                        if (dist < 140) {
+                            ctx.beginPath();
+                            ctx.moveTo(nodes[i].x, nodes[i].y);
+                            ctx.lineTo(nodes[j].x, nodes[j].y);
+                            ctx.strokeStyle = `rgba(0, 243, 255, ${0.15 * (1 - dist / 140)})`;
+                            ctx.lineWidth = 1;
+                            ctx.stroke();
+                        }
+                    }
+                }
+
+                nodes.forEach(node => {
+                    ctx.beginPath();
+                    ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(0, 243, 255, 0.55)';
+                    ctx.shadowBlur = 8;
+                    ctx.shadowColor = '#00f3ff';
+                    ctx.fill();
+
+                    node.x += node.vx;
+                    node.y += node.vy;
+
+                    if (node.x < 0 || node.x > canvas.width) node.vx *= -1;
+                    if (node.y < 0 || node.y > canvas.height) node.vy *= -1;
+                });
+
+                requestAnimationFrame(animateCanvas);
             }
 
-            // Center dot
-            ctx.fillStyle = '#00FFFF';
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, 4, 0, Math.PI * 2);
-            ctx.fill();
-
-            requestAnimationFrame(drawRadar);
+            animateCanvas();
         }
 
-        // Command handler
-        document.getElementById('cmd-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                const cmd = e.target.value.toLowerCase();
-                if (cmd.includes('hello')) {
-                    alert('Good day, sir. How may I be of service?');
-                } else if (cmd.includes('status')) {
-                    alert('All systems nominal. No threats detected.');
-                } else if (cmd.includes('power')) {
-                    alert('Arc reactor at 100% capacity.');
-                }
-                e.target.value = '';
-            }
-        });
+        function renderShortcuts() {
+            const container = document.getElementById('shortcuts-grid');
+            container.innerHTML = '';
 
-        // Initialize
-        updateTime();
-        setInterval(updateTime, 1000);
-        drawRadar();
+            userShortcuts.forEach(item => {
+                const tile = document.createElement('div');
+                tile.className = 'glossy-panel glossy-panel-interactive p-3 flex flex-col items-center justify-center text-center cursor-pointer group relative min-h-[95px]';
+                
+                tile.innerHTML = `
+                    <button onclick="event.stopPropagation(); deleteShortcut('${item.id}')" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 text-cyan-500/50 hover:text-red-400 p-1 transition-opacity text-xs" title="Remove Module">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <div class="text-2xl mb-2 transition-transform group-hover:scale-110 ${item.color || 'text-cyan-400'}">
+                        <i class="${item.icon || 'fa-solid fa-globe'}"></i>
+                    </div>
+                    <span class="font-orbitron text-xs font-semibold tracking-wide text-cyan-200 group-hover:text-cyan-300 truncate w-full">
+                        ${item.title}
+                    </span>
+                    <span class="text-[10px] font-mono-tech text-cyan-500/70 truncate w-full mt-0.5">
+                        ${new URL(item.url).hostname.replace('www.', '')}
+                    </span>
+                `;
+
+                tile.addEventListener('click', () => {
+                    logTerminalMessage(`Opening module connection: [${item.title}] -> ${item.url}`, 'cmd');
+                    window.open(item.url, '_blank');
+                });
+
+                container.appendChild(tile);
+            });
+        }
+
+        function deleteShortcut(id) {
+            userShortcuts = userShortcuts.filter(s => s.id !== id);
+            localStorage.setItem('jarvis_shortcuts', JSON.stringify(userShortcuts));
+            renderShortcuts();
+            logTerminalMessage(`Shortcut module detached from database.`, 'system');
+        }
+
+        function startLiveClock() {
+            function updateClock() {
+                const now = new Date();
+                document.getElementById('live-clock').innerText = now.toTimeString().split(' ')[0];
+                document.getElementById('current-date').innerText = now.toDateString().toUpperCase();
+            }
+            updateClock();
+            setInterval(updateClock, 1000);
+        }
+
+        function startTelemetryFluctuations() {
+            setInterval(() => {
+                const updateGauge = (barId, valId, baseVal) => {
+                    const newVal = Math.min(100, Math.max(20, baseVal + Math.floor((Math.random() - 0.5) * 8)));
+                    const bar = document.getElementById(barId);
+                    const val = document.getElementById(valId);
+                    if (bar && val) {
+                        bar.style.width = newVal + '%';
+                        val.innerText = newVal + '%';
+                    }
+                };
+
+                updateGauge('cpu-bar', 'cpu-val', 72);
+                updateGauge('mem-bar', 'mem-val', 58);
+                updateGauge('net-bar', 'net-val', 95);
+            }, 3000);
+        }
+
+        function setupTerminalLogic() {
+            const form = document.getElementById('terminal-form');
+            const input = document.getElementById('terminal-input');
+            const clearBtn = document.getElementById('clear-terminal-btn');
+
+            clearBtn.addEventListener('click', () => {
+                document.getElementById('terminal-logs').innerHTML = '';
+            });
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const cmd = input.value.trim().toLowerCase();
+                if (!cmd) return;
+
+                logTerminalMessage(`JARVIS> ${cmd}`, 'user');
+                input.value = '';
+
+                processCommand(cmd);
+            });
+        }
+
+        function processCommand(cmd) {
+            if (cmd === 'help') {
+                logTerminalMessage('Available Commands: [help, clear, time, status, shortcuts, add site, radar scan, open <name>]', 'system');
+            } else if (cmd === 'clear') {
+                document.getElementById('terminal-logs').innerHTML = '';
+            } else if (cmd === 'time') {
+                logTerminalMessage(`System Time: ${new Date().toLocaleString()}`, 'system');
+            } else if (cmd === 'status') {
+                logTerminalMessage('ARC Reactor: 8.5 GW | Shields: 89% | Threat Assessment: LOW', 'system');
+            } else if (cmd === 'radar scan') {
+                logTerminalMessage('Executing tactical sector sweep... 3 blips identified.', 'cmd');
+            } else if (cmd === 'add site') {
+                document.getElementById('shortcut-modal').classList.remove('hidden');
+                logTerminalMessage('Opened module shortcut creation dialog.', 'system');
+            } else if (cmd === 'shortcuts') {
+                const names = userShortcuts.map(s => s.title).join(', ');
+                logTerminalMessage(`Shortcuts: ${names}`, 'system');
+            } else if (cmd.startsWith('open ')) {
+                const targetName = cmd.replace('open ', '').trim();
+                const found = userShortcuts.find(s => s.title.toLowerCase() === targetName);
+                if (found) {
+                    logTerminalMessage(`Executing quick link: Launching ${found.title}...`, 'cmd');
+                    window.open(found.url, '_blank');
+                } else {
+                    logTerminalMessage(`Shortcut '${targetName}' not found. Opening web search...`, 'system');
+                    window.open(`https://www.google.com/search?q=${encodeURIComponent(targetName)}`, '_blank');
+                }
+            } else {
+                logTerminalMessage(`Command '${cmd}' unrecognized. Type 'help' for protocols.`, 'error');
+            }
+        }
+
+        function logTerminalMessage(msg, type = 'system') {
+            const logs = document.getElementById('terminal-logs');
+            const entry = document.createElement('div');
+
+            if (type === 'user') {
+                entry.className = 'text-cyan-200 font-bold';
+            } else if (type === 'cmd') {
+                entry.className = 'text-emerald-400';
+            } else if (type === 'error') {
+                entry.className = 'text-pink-400';
+            } else {
+                entry.className = 'text-cyan-400/80';
+            }
+
+            entry.innerText = msg;
+            logs.appendChild(entry);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function setupModalListeners() {
+            const modal = document.getElementById('shortcut-modal');
+            const openBtn = document.getElementById('open-add-modal');
+            const closeBtn = document.getElementById('close-add-modal');
+            const addForm = document.getElementById('add-shortcut-form');
+
+            openBtn.addEventListener('click', () => modal.classList.remove('hidden'));
+            closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+
+            addForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const title = document.getElementById('shortcut-title').value.trim();
+                let url = document.getElementById('shortcut-url').value.trim();
+                let icon = document.getElementById('shortcut-icon').value.trim();
+
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    url = 'https://' + url;
+                }
+
+                if (!icon) icon = 'fa-solid fa-globe';
+
+                const newShortcut = {
+                    id: Date.now().toString(),
+                    title: title,
+                    url: url,
+                    icon: icon,
+                    color: 'text-cyan-300'
+                };
+
+                userShortcuts.push(newShortcut);
+                localStorage.setItem('jarvis_shortcuts', JSON.stringify(userShortcuts));
+                renderShortcuts();
+
+                logTerminalMessage(`Added new module shortcut: ${title}`, 'cmd');
+
+                addForm.reset();
+                modal.classList.add('hidden');
+            });
+        }
     </script>
 </body>
 </html>
